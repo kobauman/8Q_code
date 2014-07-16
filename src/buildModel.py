@@ -49,7 +49,7 @@ class buidModel():
 
 
     def buildLDA(self,topic_number):
-        self.lda_model = models.ldamodel.LdaModel(corpus=self.corpus_int, id2word=self.dictionary, num_topics=topic_number, update_every=1, chunksize=10000, passes=1)
+        self.lda_model = models.ldamodel.LdaModel(corpus=self.corpus_int, id2word=self.dictionary, num_topics=topic_number, update_every=1, chunksize=10000, passes=20)
         self.lda_model.print_topics(20)
             
         output = open('../../data/lda/%d_LDA_topics.txt'%topic_number,"w")
