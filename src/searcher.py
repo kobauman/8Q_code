@@ -208,7 +208,14 @@ class searcher():
         return paper_result, cluster_result
         
 if __name__ == '__main__':
-    search = searcher(50)
+    if len(sys.argv) > 1:
+        topic_num = int(sys.argv[1])
+    else:
+        print 'Please specify Topic_num'
+        exit()
+    
+    
+    search = searcher(topic_num)
     t0 = time.time()
     #a,b = search.getResultFromText('Magnetoelastic Viscosity Sensor for On-Line Status Assessment of Lubricant Oils')
     a,b = search.search('A Data Fusion Technique for Wireless Ranging Performance Improvement',topics_num = 10,cluster_num = 10)

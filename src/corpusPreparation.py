@@ -37,6 +37,13 @@ def get_abstracts(path):
                 rawText = data['abstract']
                 parsedText = cleanText(rawText)
                 data['cleanText'] = parsedText
+                year = data['year']
+                if year != 'None':
+                    y = int(year)
+                    if y < 2015 and y > 1950:
+                        data['year'] = str(y)
+                    else:
+                        data['year'] = 'None'
                 
                 abstracts.append(data.copy()) 
                 
