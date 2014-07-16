@@ -220,7 +220,7 @@ if __name__ == '__main__':
     #a,b = search.getResultFromText('Magnetoelastic Viscosity Sensor for On-Line Status Assessment of Lubricant Oils')
     a,b = search.search('A Data Fusion Technique for Wireless Ranging Performance Improvement',topics_num = 10,cluster_num = 10)
     print time.time()-t0
-    for x in a:
+    for x in a[:20]:
         try:
             print x
         except:
