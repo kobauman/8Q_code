@@ -6,10 +6,14 @@ from cStringIO import StringIO
 import os
 import json
 import sys
+import re
+import dateutil.parser as dparser
 sys.path.append('../')
 
 from utils.stopwords_lst import stopwords
 stoplist = stopwords()
+
+
 
 def convert_all_files(path):
     if not path.endswith("/"):
@@ -40,6 +44,7 @@ def convert_all_files(path):
 
 
 def convert_pdf_to_txt(path):
+    p = re.compile('\d{4}')
     rsrcmgr = PDFResourceManager()
     retstr = StringIO()
     codec = 'utf-8'
@@ -51,19 +56,27 @@ def convert_pdf_to_txt(path):
     maxpages = 0
     caching = True
     pagenos=set()
-    for i, page in enumerate(PDFPage.get_pages(fp, pagenos, 
+    for j, page in enumerate(PDFPage.get_pages(fp, pagenos, 
                                                maxpages=maxpages, 
                                                password=password,
                                                caching=caching, 
                                                check_extractable=True)):
-        interpreter.process_page(page)
-        break
+        if j == 0:
+            interpreter.process_page(page)
+        else:
+            continue
+        #break
     
     fp.close()
     device.close()
     string = retstr.getvalue()
     retstr.close()
     
+    years = p.findall(string)
+    if years:
+        year = years[0]
+    else:
+        year = None
     lines = string.split('\n')
     header = list()
     header_flag = False
@@ -95,7 +108,9 @@ def convert_pdf_to_txt(path):
     if len(abstract):
         #print header_text
         return {'header':header_text.decode('utf-8', 'ignore'), 
-                'abstract':abstract}
+                'abstract':abstract,
+                'year':year,
+                'pages':j+1}
     else:
         return False
 

@@ -4,7 +4,7 @@ import logging
 from copy import copy
 
 
-class buidModels():
+class buidModel():
     def __init__(self,filename):
         self.abstracts = None
         try:
@@ -15,7 +15,10 @@ class buidModels():
         except:
             return
         self.texts = list()
-    
+        
+        self.indexLDA = dict()
+        self.lda_corpus = list()
+        
     
     
     def prepareCorpus(self):
@@ -45,7 +48,7 @@ class buidModels():
 
 
     def buildLDA(self,topic_number):
-        self.lda_model = models.ldamodel.LdaModel(corpus=self.corpus_int, id2word=self.dictionary, num_topics=topic_number, update_every=1, chunksize=10000, passes=20)
+        self.lda_model = models.ldamodel.LdaModel(corpus=self.corpus_int, id2word=self.dictionary, num_topics=topic_number, update_every=1, chunksize=10000, passes=1)
         self.lda_model.print_topics(20)
             
         output = open('../../data/LDAtopics/'+'%d_LDA_topics.txt'%topic_number,"w")
@@ -67,13 +70,32 @@ class buidModels():
                     output.write(str(i)+"\t"+"\n\n")
         output.close()
     
+    def makeNames(self):
+        self.topics_names = list()
+        lda_show = self.lda_model.show_topics(topics = self.lda_model.num_topics, topn=5, log=False, formatted=True)
+        for topic in lda_show:
+            words = topic.split("+")
+            weights = [float(x.split("*")[0]) for x in words]
+            i = 1
+            if weights[i] > weights[0]/2:
+                self.topics_names.append([x.split("*")[1].strip() for x in words[:2]])
+            else:
+                self.topics_names.append([x.split("*")[1].strip() for x in words[:1]])
+                
+    
     def applyLDA(self):
         for i, abstract in enumerate(self.corpus_int):
             topics = self.lda_model[abstract]
             cleanTopics = list()
+            temp = [0]*self.lda_model.num_topics
             for topic in topics:
                 if topic[1] > 0.05:
                     cleanTopics.append(topic)
+                    temp[topic[0]] = topic[1]
+                    if topic[1] > 0.2:
+                        self.indexLDA[int(topic[0])] = self.indexLDA.get(int(topic[0]),[])
+                        self.indexLDA[int(topic[0])].append(i)
+            self.lda_corpus.append(copy(temp))
             self.abstracts[i]['lda'] = copy(cleanTopics)
         
     def save(self):
@@ -89,6 +111,21 @@ class buidModels():
         #save LDA model
         self.lda_model.save('../../data/lda_model_%d'%self.lda_model.num_topics)
         
+        #save indexLDA
+        output = open('../../data/indexLDA.json','w')
+        output.write(json.dumps(self.indexLDA))
+        output.close()
+        
+        #save LDAcorpus
+        output = open('../../data/LDAcorpus.json','w')
+        output.write(json.dumps(self.lda_corpus))
+        output.close()
+        
+        #save LDAcorpus
+        output = open('../../data/LDAnames.json','w')
+        output.write(json.dumps(self.topics_names))
+        output.close()
+        
         #save data
         output = open('../../data/abstracts_rich.json','w')
         output.write(json.dumps(self.abstracts))
@@ -96,9 +133,10 @@ class buidModels():
 
         
 if __name__ == '__main__':
-    bm = buidModels('../../data/abstracts.json')
+    bm = buidModel('../../data/abstracts.json')
     bm.prepareCorpus()
     bm.builtTFIDF()
     bm.buildLDA(50)
+    bm.makeNames()
     bm.applyLDA()
     bm.save()
