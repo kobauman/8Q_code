@@ -95,7 +95,7 @@ class searcher():
     def getExtendedSetOfPapers(self, topic_set):
         result = set()
         for topic in topic_set:
-            result = result.union(set(self.indexLDA[str(topic)]))
+            result = result.union(set(self.indexLDA.get(str(topic),set([]))))
         print 'extended_list: ',len(result)
         return result
     
