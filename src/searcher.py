@@ -35,28 +35,34 @@ class searcher():
         #load index
         self.index = similarities.SparseMatrixSimilarity.load('../../data/index')
         
-        #load LDA model
-        self.lda_model = models.ldamodel.LdaModel.load('../../data/lda_model_%d'%topic_num)
-        
-        #load indexLDA
-        infile = open('../../data/indexLDA.json','r')
-        self.indexLDA = json.loads(infile.read())
-        infile.close()
-        
-        #load LDA corpus
-        infile = open('../../data/LDAcorpus.json','r')
-        self.lda_corpus = json.loads(infile.read())
-        infile.close()
-        
-        #load LDA names
-        infile = open('../../data/LDAnames.json','r')
-        self.topics_names = json.loads(infile.read())
-        infile.close()
-        
         #load data
         infile = open('../../data/abstracts_rich.json','r')
         self.abstracts = json.loads(infile.read())
         infile.close()
+        
+        
+        #============================
+        #LDA
+        
+        #load LDA model
+        self.lda_model = models.ldamodel.LdaModel.load('../../data/lda/lda_model_%d'%topic_num)
+        
+        #load indexLDA
+        infile = open('../../data/lda/indexLDA_%d.json'%topic_num,'r')
+        self.indexLDA = json.loads(infile.read())
+        infile.close()
+        
+        #load LDA corpus
+        infile = open('../../data/lda/LDAcorpus_%d.json'%topic_num,'r')
+        self.lda_corpus = json.loads(infile.read())
+        infile.close()
+        
+        #load LDA names
+        infile = open('../../data/lda/LDAnames_%d.json'%topic_num,'r')
+        self.topics_names = json.loads(infile.read())
+        infile.close()
+        
+        
         
         
         print 'Searcher Loaded'

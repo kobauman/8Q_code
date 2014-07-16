@@ -121,10 +121,10 @@ if __name__ == '__main__':
 #    out = open(output, 'w')
 #    out.write(convert_pdf_to_txt(input_file))
     
-    convert_all_files('../../data/8QLabs_Corpus/IEEEcnf/')
+    #convert_all_files('../../data/8QLabs_Corpus/IEEEcnf/')
     
     #convert_all_files('../../data/8QLabs_Corpus/')
-        
+    convert_all_files('/opt/bitnami/apache2/htdocs/data/Xfiles/')
         
             
                 

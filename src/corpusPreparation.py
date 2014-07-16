@@ -51,7 +51,8 @@ if __name__ == '__main__':
     
     #path = '../../data/8QLabs_Corpus'
     #path = '../../data/8QLabs_Corpus/'
-    path = '../../data/8QLabs_Corpus/IEEEcnf'
+    #path = '../../data/8QLabs_Corpus/IEEEcnf'
+    path = '/opt/bitnami/apache2/htdocs/data/Xfiles/'
     abstracts = get_abstracts(path)
     
     output = open('../../data/abstracts.json', 'w')

@@ -2,6 +2,7 @@ from gensim import corpora, models, similarities
 import json
 import logging
 from copy import copy
+import sys
 
 
 class buidModel():
@@ -51,7 +52,7 @@ class buidModel():
         self.lda_model = models.ldamodel.LdaModel(corpus=self.corpus_int, id2word=self.dictionary, num_topics=topic_number, update_every=1, chunksize=10000, passes=1)
         self.lda_model.print_topics(20)
             
-        output = open('../../data/LDAtopics/'+'%d_LDA_topics.txt'%topic_number,"w")
+        output = open('../../data/lda/%d_LDA_topics.txt'%topic_number,"w")
         
         #self.save()
     #        self.dictionary.save(self.path+'%d_%d_words.dict'%(self.target_class,self.topics_num))
@@ -108,35 +109,47 @@ class buidModel():
         #save index
         self.index.save('../../data/index')
         
-        #save LDA model
-        self.lda_model.save('../../data/lda_model_%d'%self.lda_model.num_topics)
-        
-        #save indexLDA
-        output = open('../../data/indexLDA.json','w')
-        output.write(json.dumps(self.indexLDA))
-        output.close()
-        
-        #save LDAcorpus
-        output = open('../../data/LDAcorpus.json','w')
-        output.write(json.dumps(self.lda_corpus))
-        output.close()
-        
-        #save LDAcorpus
-        output = open('../../data/LDAnames.json','w')
-        output.write(json.dumps(self.topics_names))
-        output.close()
-        
         #save data
         output = open('../../data/abstracts_rich.json','w')
         output.write(json.dumps(self.abstracts))
         output.close()
+        
+        
+        #==================================================
+        #LDA
+        tn = self.lda_model.num_topics
+        #save LDA model
+        self.lda_model.save('../../data/lda/lda_model_%d'%tn)
+        
+        #save indexLDA
+        output = open('../../data/lda/indexLDA_%d.json'%tn,'w')
+        output.write(json.dumps(self.indexLDA))
+        output.close()
+        
+        #save LDAcorpus
+        output = open('../../data/lda/LDAcorpus_%d.json'%tn,'w')
+        output.write(json.dumps(self.lda_corpus))
+        output.close()
+        
+        #save LDAcorpus
+        output = open('../../data/lda/LDAnames_%d.json'%tn,'w')
+        output.write(json.dumps(self.topics_names))
+        output.close()
+        
+        
 
         
 if __name__ == '__main__':
+    if len(sys.argv) > 1:
+        topic_num = int(sys.argv[1])
+    else:
+        print 'Please specify Topic_num'
+        exit()
+        
     bm = buidModel('../../data/abstracts.json')
     bm.prepareCorpus()
     bm.builtTFIDF()
-    bm.buildLDA(50)
+    bm.buildLDA(topic_num)
     bm.makeNames()
     bm.applyLDA()
     bm.save()
