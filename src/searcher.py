@@ -83,8 +83,8 @@ class searcher():
             #print doc,w
             if w > 0.05:
                 result_set.add(doc)
-        print 'relevant_papers',len(result_set), '\t', result_set
-        #return result_set
+        print 'relevant_papers',len(result_set)#, '\t', result_set
+        return result_set
     
     
     def getSetOfTopicsByPapers(self, paper_set, N = 1000):
@@ -95,7 +95,7 @@ class searcher():
                 result[topic[0]]+= topic[1]
         res = [[result[t],t] for t in result]
         res.sort(reverse=True)
-        print [t[1] for t in res[:N]]
+        #print [t[1] for t in res[:N]]
         return [t[1] for t in res[:N]]
         
     def getExtendedListOfPapers(self, topic_set):
