@@ -6,7 +6,7 @@ import time
 import sys
 sys.path.append('../')
 sys.path.append('/home/bitnami/8Q/8Q_code/src/')
-sys.path.append('/home/bitnami/8Q/8Q_code/utils/')
+sys.path.append('/home/bitnami/8Q/8Q_code/')
 from sklearn.cluster import MiniBatchKMeans
 from sklearn.decomposition import PCA
 import numpy as np
