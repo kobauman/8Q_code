@@ -14,11 +14,12 @@ search = searcher(200)
 class searchHandler(BaseHTTPServer.BaseHTTPRequestHandler, searcher):
     def do_HEAD(self):
         searchQuery = self.path[1:]
+        print searchQuery
         try:
             a,b = search.search(searchQuery, 20, 10)
         except:
             a,b = [],[]
-            
+        print a,b
         clusters = open('/opt/bitnami/apache2/cgi-bin/clusters.csv','w')
         for t in a:
             try:
