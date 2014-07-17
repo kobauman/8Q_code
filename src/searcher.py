@@ -33,18 +33,18 @@ def getPCAonDict(data_dict):
     return {t: list(pca.transform(data_dict[t])[0]) for t in data_dict}
     
 class searcher():
-    def __init__(self,topic_num):
+    def __init__(self,topic_num,path='../../'):
         #load dictionary
-        self.dictionary = corpora.Dictionary.load('../../data/dictionary')
+        self.dictionary = corpora.Dictionary.load(path+'data/dictionary')
         
         #load Tfidf
-        self.tfidf = models.TfidfModel.load('../../data/tfidf_model')
+        self.tfidf = models.TfidfModel.load(path+'data/tfidf_model')
         
         #load index
-        self.index = similarities.SparseMatrixSimilarity.load('../../data/index')
+        self.index = similarities.SparseMatrixSimilarity.load(path+'data/index')
         
         #load data
-        infile = open('../../data/abstracts_rich.json','r')
+        infile = open(path+'data/abstracts_rich.json','r')
         self.abstracts = json.loads(infile.read())
         infile.close()
         
@@ -53,20 +53,20 @@ class searcher():
         #LDA
         
         #load LDA model
-        self.lda_model = models.ldamodel.LdaModel.load('../../data/lda/lda_model_%d'%topic_num)
+        self.lda_model = models.ldamodel.LdaModel.load(path+'data/lda/lda_model_%d'%topic_num)
         
         #load indexLDA
-        infile = open('../../data/lda/indexLDA_%d.json'%topic_num,'r')
+        infile = open(path+'data/lda/indexLDA_%d.json'%topic_num,'r')
         self.indexLDA = json.loads(infile.read())
         infile.close()
         
         #load LDA corpus
-        infile = open('../../data/lda/LDAcorpus_%d.json'%topic_num,'r')
+        infile = open(path+'data/lda/LDAcorpus_%d.json'%topic_num,'r')
         self.lda_corpus = json.loads(infile.read())
         infile.close()
         
         #load LDA names
-        infile = open('../../data/lda/LDAnames_%d.json'%topic_num,'r')
+        infile = open(path+'data/lda/LDAnames_%d.json'%topic_num,'r')
         self.topics_names = json.loads(infile.read())
         infile.close()
         

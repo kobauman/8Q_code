@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import sys
+
 from searcher import searcher
 
 if __name__ == '__main__':
@@ -10,7 +11,7 @@ if __name__ == '__main__':
         print 'Please specify Search Query'
         exit()
     
-    search = searcher(200)
+    search = searcher(200,'/home/bitnami/8Q/')
 
     print searchQuery
     try:
