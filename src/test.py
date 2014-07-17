@@ -19,7 +19,7 @@ if __name__ == '__main__':
     except:
         a,b = [],[]
     
-    print len(a),len(b)
+    print 'Papers = %d, Clusters = %d'%(len(a),len(b))
     clusters = open('/opt/bitnami/apache2/cgi-bin/clusters.csv','w')
     #clusters = open('../../data/clusters.csv','w')
     for i, cluster in enumerate(b):
@@ -46,3 +46,5 @@ if __name__ == '__main__':
             papers.write('\n')
     #papers.write('\n'.join(b))
     papers.close()
+    
+    print 'DONE'
