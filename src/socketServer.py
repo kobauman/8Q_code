@@ -8,19 +8,20 @@ import time
 #import threading
 from searcher import searcher
 
-search = searcher(200)
+search = searcher(50)
 
 
 class searchHandler(BaseHTTPServer.BaseHTTPRequestHandler, searcher):
     def do_HEAD(self):
-        searchQuery = self.path[1:]
+        searchQuery = self.path
         print searchQuery
         try:
             a,b = search.search(searchQuery, 20, 10)
         except:
             a,b = [],[]
         print a,b
-        clusters = open('/opt/bitnami/apache2/cgi-bin/clusters.csv','w')
+        #clusters = open('/opt/bitnami/apache2/cgi-bin/clusters.csv','w')
+        clusters = open('../../data/clusters.csv','w')
         for t in a:
             try:
                 clusters.write(t+'\n')
@@ -30,7 +31,8 @@ class searchHandler(BaseHTTPServer.BaseHTTPRequestHandler, searcher):
         #topics.write('\n'.join(a))
         clusters.close()
         
-        papers = open('/opt/bitnami/apache2/cgi-bin/papers.csv','w')
+        #papers = open('/opt/bitnami/apache2/cgi-bin/papers.csv','w')
+        papers = open('../../data/papers.csv','w')
         for t in b:
             try:
                 papers.write(t+'\n')

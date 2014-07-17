@@ -110,8 +110,8 @@ class searcher():
         corpus = list()
         for paperID in papers_list:
             corpus.append(self.lda_corpus[paperID])
-        
-        clusterModel = MiniBatchKMeans(init='random', n_clusters=cluster_num, n_init=10)
+        print len(corpus)
+        clusterModel = MiniBatchKMeans(init='k-means++', n_clusters=cluster_num, n_init=100)
         clusterModel.fit(corpus)
         
         clusterTopics = dict()
