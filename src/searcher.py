@@ -5,7 +5,9 @@ import re
 import time
 import sys
 sys.path.append('../')
-from sklearn.cluster import MiniBatchKMeans, KMeans
+from sklearn.cluster import MiniBatchKMeans
+from sklearn.decomposition import PCA
+import numpy as np
 
 
 from utils.stopwords_lst import stopwords
@@ -22,8 +24,12 @@ def cleanText(text):
     return result
 
 
-
-
+def getPCAonDict(data_dict):
+    pca = PCA(n_components=2)
+    corpus = [data_dict[t] for t in data_dict]
+    pca.fit(corpus)
+    return {t: list(pca.transform(data_dict[t])[0]) for t in data_dict}
+    
 class searcher():
     def __init__(self,topic_num):
         #load dictionary
@@ -78,7 +84,7 @@ class searcher():
             if w > 0.05:
                 result_set.add(doc)
         print 'relevant_papers',len(result_set), '\t', result_set
-        return result_set
+        #return result_set
     
     
     def getSetOfTopicsByPapers(self, paper_set, N = 1000):
@@ -92,68 +98,108 @@ class searcher():
         print [t[1] for t in res[:N]]
         return [t[1] for t in res[:N]]
         
-    def getExtendedSetOfPapers(self, topic_set):
+    def getExtendedListOfPapers(self, topic_set):
         result = set()
         for topic in topic_set:
             result = result.union(set(self.indexLDA.get(str(topic),set([]))))
         print 'extended_list: ',len(result)
-        return result
+        return list(result)
     
     
-    def getClustersOfpapers(self,papers_set,cluster_num = 10):
+    def getClustersOfpapers(self,papers_list,cluster_num = 10):
         corpus = list()
-        for paperID in papers_set:
+        for paperID in papers_list:
             corpus.append(self.lda_corpus[paperID])
         
         clusterModel = MiniBatchKMeans(init='random', n_clusters=cluster_num, n_init=10)
         clusterModel.fit(corpus)
         
         clusterTopics = dict()
+        clusterPapers = dict()
         clusterYear = dict()
         clusterSize = dict()
         
-        paper_result = list()
-        for paperID in papers_set:
+        
+        
+        for paperID in papers_list:
             cluster = int(clusterModel.predict(self.lda_corpus[paperID])[0])
-            paper_result.append('%d,%d,%s,%s,%d,%s'%(cluster,
-                                            paperID,
-                                            self.abstracts[paperID]['header'],
-                                            str(self.abstracts[paperID]['year']),
-                                            self.abstracts[paperID]['pages'],
-                                            self.abstracts[paperID]['path']))
             
             clusterSize[cluster] = clusterSize.get(cluster,0)
             clusterSize[cluster] += 1
             
-            clusterTopics[cluster] = clusterTopics.get(cluster,dict())
-            for t in self.abstracts[paperID]['lda']:
-                clusterTopics[cluster][t[0]] = clusterTopics[cluster].get(t[0],0)
-                clusterTopics[cluster][t[0]] += t[1]
+            if cluster in clusterTopics:
+                clusterTopics[cluster] += np.array(self.lda_corpus[paperID])
+            else:
+                clusterTopics[cluster] = np.array(self.lda_corpus[paperID])
+            
+            clusterPapers[cluster] = clusterPapers.get(cluster,{})
+            clusterPapers[cluster][paperID] = self.lda_corpus[paperID]
+            
             
             clusterYear[cluster] = clusterYear.get(cluster,dict())
             year = self.abstracts[paperID]['year']
             if year:
                 clusterYear[cluster][year] = clusterYear[cluster].get(year,0)
                 clusterYear[cluster][year]+=1
-                
+        
+        
+        clusterCords = getPCAonDict(clusterTopics)
         cluster_result = list()
-        for cluster in clusterSize:
-            topics = [[clusterTopics[cluster][t],t] for t in clusterTopics[cluster]]
-            topics.sort(reverse=True)
-            name = self.topics_names[topics[0][1]]
+        paper_result = list()
+        for cluster in clusterPapers:
+            topPapers = list()
+            clusterPapers[cluster] = getPCAonDict(clusterPapers[cluster])
+            for paperID in clusterPapers[cluster]:
+                x = clusterPapers[cluster][paperID][0]
+                y = clusterPapers[cluster][paperID][1]
+                distance = clusterModel.transform(self.lda_corpus[paperID])[0][cluster]
+                #print 'papreID', cluster, distance, clusterModel.transform(self.lda_corpus[paperID])
+                topPapers.append([distance, paperID])
+                
+                paper_result.append('%d,%d,%.3f,%.3f,%.3f,%s,%d,%s,%s,%s'%(cluster,
+                                                         paperID,
+                                                         x,
+                                                         y,
+                                                         distance,
+                                                         str(self.abstracts[paperID]['year']),
+                                                         self.abstracts[paperID]['pages'],
+                                                         self.abstracts[paperID]['path'],
+                                                         self.abstracts[paperID]['header'],
+                                                         self.abstracts[paperID]['abstract']
+                                                         ))
             
-            years = [[clusterYear[cluster][y],y] for y in clusterYear[cluster]]
+                
+            topPapers.sort()
+            topNames = [self.abstracts[paperID[1]]['header'].replace(',','') for paperID in topPapers[:5]]
+            topNames_str = '"%s"'%(','.join(topNames))
+            
+            
+            
+            
+            topics = list(clusterTopics[cluster])
+            #print topics, topics.index(max(topics)),topics[topics.index(max(topics))]
+            #print len(self.topics_names),self.topics_names[topics.index(max(topics))]
+            name = '"'+','.join(self.topics_names[topics.index(max(topics))])+'"'
+            x = clusterCords[cluster][0]
+            y = clusterCords[cluster][1]
+            years = [[clusterYear[cluster][year],year] for year in clusterYear[cluster]]
             if len(years) == 0:
                 year = 'None'
             else:
                 years.sort(reverse=True)
                 year = years[0][1]
             
-            cluster_result.append('%s,%d,%d,%d,%s'%(str(name),
+            cluster_result.append('%s,%d,%.3f,%.3f,%d,%d,%s,%s'%(str(name),
                                           cluster,
+                                          x,
+                                          y,
                                           clusterSize[cluster],
                                           cluster,
-                                          year))
+                                          year,
+                                          topNames_str))
+            
+            
+        
     
         return paper_result, cluster_result
     
@@ -203,11 +249,12 @@ class searcher():
     def search(self,searchQuery,topics_num, cluster_num):
         relevantPapers = self.getRelevantPapers(searchQuery)
         topics = self.getSetOfTopicsByPapers(relevantPapers, topics_num)
-        extendedSetOfPapers = self.getExtendedSetOfPapers(topics)
-        paper_result, cluster_result = self.getClustersOfpapers(extendedSetOfPapers,cluster_num)
+        extendedListOfPapers = self.getExtendedListOfPapers(topics)
+        paper_result, cluster_result = self.getClustersOfpapers(extendedListOfPapers,cluster_num)
         return paper_result, cluster_result
         
 if __name__ == '__main__':
+    t0 = time.time()
     if len(sys.argv) > 1:
         topic_num = int(sys.argv[1])
     else:
@@ -216,7 +263,7 @@ if __name__ == '__main__':
     
     
     search = searcher(topic_num)
-    t0 = time.time()
+    #t0 = time.time()
     #a,b = search.getResultFromText('Magnetoelastic Viscosity Sensor for On-Line Status Assessment of Lubricant Oils')
     a,b = search.search('A Data Fusion Technique for Wireless Ranging Performance Improvement',topics_num = 10,cluster_num = 10)
     print time.time()-t0
@@ -231,3 +278,4 @@ if __name__ == '__main__':
             print x
         except:
             pass
+    print time.time()-t0
